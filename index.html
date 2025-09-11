@@ -3,12 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>3D Block with Dice</title>
+<title>3D Block with Dice Spawner</title>
 <style>
-  body { margin: 0; overflow: hidden; background: #686868; }
+  body { margin: 0; overflow: hidden; background: #686868; font-family: Arial, sans-serif; }
+  #ui-card {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 160px;
+    padding: 15px;
+    background: rgba(255,255,255,0.9);
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    z-index: 10;
+  }
+  #ui-card button {
+    width: 100%;
+    padding: 8px;
+    font-size: 14px;
+    cursor: pointer;
+  }
 </style>
 </head>
 <body>
+
+<div id="ui-card">
+  <h3>Dice Spawner</h3>
+  <button id="spawnDiceBtn">Spawn Dice</button>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
 
@@ -36,40 +58,43 @@ scene.add(ambientLight);
 const dirLight = new THREE.DirectionalLight(0xffffff, 1);
 dirLight.position.set(100, 200, 100);
 dirLight.castShadow = true;
-dirLight.shadow.mapSize.width = 2048;
-dirLight.shadow.mapSize.height = 2048;
-dirLight.shadow.camera.left = -200;
-dirLight.shadow.camera.right = 200;
-dirLight.shadow.camera.top = 200;
-dirLight.shadow.camera.bottom = -200;
-dirLight.shadow.camera.near = 1;
-dirLight.shadow.camera.far = 500;
 scene.add(dirLight);
 
-// Main green block (playing field) – no shadow
+// Main green block (playing field)
 const fieldGeometry = new THREE.BoxGeometry(100, 1, 100);
 const fieldMaterial = new THREE.MeshStandardMaterial({ color: 0x6aa84f });
 const field = new THREE.Mesh(fieldGeometry, fieldMaterial);
-field.position.y = 0.5; // top surface at y=1
+field.position.y = 0.5;
 scene.add(field);
 
-// New block on top of the green field – acts as dice
-const diceSize = 10;
-const diceGeometry = new THREE.BoxGeometry(diceSize, diceSize, diceSize);
-const diceMaterials = [
-  new THREE.MeshStandardMaterial({ color: 0xff0000 }), // right
-  new THREE.MeshStandardMaterial({ color: 0x00ff00 }), // left
-  new THREE.MeshStandardMaterial({ color: 0x0000ff }), // top
-  new THREE.MeshStandardMaterial({ color: 0xffff00 }), // bottom
-  new THREE.MeshStandardMaterial({ color: 0xff00ff }), // front
-  new THREE.MeshStandardMaterial({ color: 0x00ffff })  // back
-];
-const dice = new THREE.Mesh(diceGeometry, diceMaterials);
+// Array to store dice instances
+const diceArray = [];
 
-// Position dice directly on top of field, centered
-dice.position.set(0, field.position.y + 0.5 + diceSize / 2, 0);
-dice.castShadow = true;
-scene.add(dice);
+// Function to spawn a new dice
+function spawnDice() {
+  const diceSize = 10;
+  const diceGeometry = new THREE.BoxGeometry(diceSize, diceSize, diceSize);
+  const diceMaterials = [
+    new THREE.MeshStandardMaterial({ color: 0xff0000 }), // right
+    new THREE.MeshStandardMaterial({ color: 0x00ff00 }), // left
+    new THREE.MeshStandardMaterial({ color: 0x0000ff }), // top
+    new THREE.MeshStandardMaterial({ color: 0xffff00 }), // bottom
+    new THREE.MeshStandardMaterial({ color: 0xff00ff }), // front
+    new THREE.MeshStandardMaterial({ color: 0x00ffff })  // back
+  ];
+  const dice = new THREE.Mesh(diceGeometry, diceMaterials);
+
+  // Position dice on top of field, slightly offset to avoid overlap
+  const offset = diceArray.length * 12; // 12 units apart
+  dice.position.set(offset, field.position.y + 0.5 + diceSize / 2, 0);
+  dice.castShadow = true;
+
+  scene.add(dice);
+  diceArray.push(dice);
+}
+
+// Button listener
+document.getElementById('spawnDiceBtn').addEventListener('click', spawnDice);
 
 // Render loop
 function animate() {
@@ -78,7 +103,7 @@ function animate() {
 }
 animate();
 
-// Handle resize
+// Resize handler
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth/window.innerHeight;
   camera.updateProjectionMatrix();
