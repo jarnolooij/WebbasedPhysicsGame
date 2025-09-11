@@ -1,0 +1,135 @@
+<!-- Toolbox -->
+<div id="toolbox">
+  <h5>🎮 GameObjects Toolbox</h5>
+
+  <!-- Dice Category -->
+  <div class="category" id="diceCategory">🎲 Dice</div>
+  <div class="category-content" id="diceContent">
+    <button id="spawnD6Btn">Spawn D6</button>
+    <button id="openCustomBtn">Custom Dice</button>
+  </div>
+
+  <!-- Other categories can go here -->
+  <!--
+  <div class="category" id="category2">Category 2</div>
+  <div class="category-content" id="category2Content">
+    <button>Action 1</button>
+  </div>
+  -->
+</div>
+
+<!-- Custom Dice Modal -->
+<div id="customModal">
+  <div id="customModalContent">
+    <h4>Custom Dice Faces</h4>
+    <input type="text" id="face1" placeholder="Face 1">
+    <input type="text" id="face2" placeholder="Face 2">
+    <input type="text" id="face3" placeholder="Face 3">
+    <input type="text" id="face4" placeholder="Face 4">
+    <input type="text" id="face5" placeholder="Face 5">
+    <input type="text" id="face6" placeholder="Face 6">
+    <button id="spawnCustomBtn">Spawn Custom Dice</button>
+    <button id="closeCustomBtn">Cancel</button>
+  </div>
+</div>
+
+<style>
+  /* Toolbox Styles */
+  #toolbox {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 220px;
+    background: rgba(255,255,255,0.95);
+    border-radius: 10px;
+    box-shadow: 0 0 12px rgba(0,0,0,0.5);
+    padding: 10px;
+    z-index: 10;
+  }
+
+  #toolbox h5 {
+    margin: 0 0 10px 0;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #ccc;
+    font-size: 16px;
+    text-align: center;
+    color: #333;
+  }
+
+  .category {
+    cursor: pointer;
+    margin-bottom: 5px;
+    font-weight: bold;
+    padding: 5px;
+    background: #f0f0f0;
+    border-radius: 5px;
+    text-align: center;
+  }
+
+  .category-content {
+    display: none;
+    margin-bottom: 10px;
+  }
+
+  .category-content button,
+  .category-content input {
+    width: 100%;
+    margin: 3px 0;
+    padding: 6px;
+    box-sizing: border-box;
+  }
+
+  /* Modal Styles */
+  #customModal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 20;
+  }
+
+  #customModalContent {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    width: 220px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #customModalContent input,
+  #customModalContent button {
+    margin: 5px 0;
+    padding: 6px;
+  }
+</style>
+
+<script>
+  // Toggle Dice category content
+  const diceCategory = document.getElementById('diceCategory');
+  const diceContent = document.getElementById('diceContent');
+  diceCategory.addEventListener('click', () => {
+    diceContent.style.display = diceContent.style.display === 'block' ? 'none' : 'block';
+  });
+
+  // Modal controls
+  const customModal = document.getElementById('customModal');
+  const openCustomBtn = document.getElementById('openCustomBtn');
+  const closeCustomBtn = document.getElementById('closeCustomBtn');
+  const spawnCustomBtn = document.getElementById('spawnCustomBtn');
+
+  openCustomBtn.addEventListener('click', () => {
+    customModal.style.display = 'flex';
+  });
+
+  closeCustomBtn.addEventListener('click', () => {
+    customModal.style.display = 'none';
+  });
+
+  spawnCustomBtn.addEventListener('click', () => {
+    customModal.style.display = 'none';
+  });
+</script>

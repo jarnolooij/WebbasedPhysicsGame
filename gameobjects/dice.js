@@ -1,6 +1,6 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js';
 import * as CANNON from 'https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js';
-import { scene, world } from './scene.js';
+import { scene, world } from '../scene.js';
 
 export const diceArray = [];
 export const diceBodies = [];

@@ -1,7 +1,46 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js';
 import { scene, camera, renderer, world } from './scene.js';
-import { spawnD6, spawnCustomDice, diceArray, diceBodies } from './dice.js';
+import { spawnD6, spawnCustomDice, diceArray, diceBodies } from './gameobjects/dice.js';
 
+// -------------------------
+// Inject Toolbox
+// -------------------------
+const toolboxContainer = document.createElement('div');
+toolboxContainer.id = 'toolbox-container';
+document.body.appendChild(toolboxContainer);
+
+fetch('ui_elements/toolbox.html')
+  .then(res => res.text())
+  .then(html => {
+    toolboxContainer.innerHTML = html;
+
+    // --- Dice category toggle ---
+    const diceCategory = document.getElementById('diceCategory');
+    const diceContent = document.getElementById('diceContent');
+    diceCategory.addEventListener('click', () => {
+      diceContent.style.display = diceContent.style.display === 'block' ? 'none' : 'block';
+    });
+
+    // --- Modal controls ---
+    const customModal = document.getElementById('customModal');
+    const openCustomBtn = document.getElementById('openCustomBtn');
+    const closeCustomBtn = document.getElementById('closeCustomBtn');
+    const spawnCustomBtn = document.getElementById('spawnCustomBtn');
+
+    openCustomBtn.addEventListener('click', () => customModal.style.display = 'flex');
+    closeCustomBtn.addEventListener('click', () => customModal.style.display = 'none');
+    spawnCustomBtn.addEventListener('click', () => {
+      spawnCustomDice();
+      customModal.style.display = 'none';
+    });
+
+    // --- D6 button ---
+    document.getElementById('spawnD6Btn').addEventListener('click', spawnD6);
+  });
+
+// -------------------------
+// Drag & Click Handling
+// -------------------------
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 let draggedDice = null;
@@ -9,9 +48,13 @@ let isDragging = false;
 let plane = new THREE.Plane(new THREE.Vector3(0,1,0),0);
 let offset = new THREE.Vector3();
 
+function getPointer(event){
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+}
+
 function onPointerDown(event){
-    mouse.x = (event.clientX / window.innerWidth) * 2 -1;
-    mouse.y = - (event.clientY / window.innerHeight) * 2 +1;
+    getPointer(event);
     raycaster.setFromCamera(mouse, camera);
     const intersects = raycaster.intersectObjects(diceArray);
     if(intersects.length > 0){
@@ -29,8 +72,7 @@ function onPointerDown(event){
 function onPointerMove(event){
     if(!draggedDice) return;
     isDragging = true;
-    mouse.x = (event.clientX / window.innerWidth) * 2 -1;
-    mouse.y = - (event.clientY / window.innerHeight) * 2 +1;
+    getPointer(event);
     raycaster.setFromCamera(mouse, camera);
     const intersectPoint = new THREE.Vector3();
     raycaster.ray.intersectPlane(plane, intersectPoint);
@@ -44,7 +86,6 @@ function onPointerUp(event){
     if(draggedDice){
         const idx = diceArray.indexOf(draggedDice);
         if(!isDragging){
-            // clicked without dragging -> jump/spin
             diceBodies[idx].velocity.set(0,40,0);
             diceBodies[idx].angularVelocity.set(Math.random()*15-7.5, Math.random()*15-7.5, Math.random()*15-7.5);
         } else {
@@ -59,11 +100,9 @@ window.addEventListener('pointerdown', onPointerDown);
 window.addEventListener('pointermove', onPointerMove);
 window.addEventListener('pointerup', onPointerUp);
 
-// Buttons
-document.getElementById('spawnD6Btn').addEventListener('click', spawnD6);
-document.getElementById('spawnCustomBtn').addEventListener('click', spawnCustomDice);
-
+// -------------------------
 // Animate
+// -------------------------
 const clock = new THREE.Clock();
 function animate(){
     requestAnimationFrame(animate);
@@ -74,7 +113,6 @@ function animate(){
         const dice = diceArray[i];
         const body = diceBodies[i];
 
-        // Remove dice out of bounds
         if(body.position.y < -50 || Math.abs(body.position.x) > 200 || Math.abs(body.position.z) > 200){
             scene.remove(dice);
             world.removeBody(body);
@@ -90,3 +128,12 @@ function animate(){
     renderer.render(scene, camera);
 }
 animate();
+
+// -------------------------
+// Resize
+// -------------------------
+window.addEventListener('resize', ()=>{
+    camera.aspect = window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
