@@ -3,25 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>3D Block with Dice Spawner</title>
+<title>Custom Dice Spawner</title>
 <style>
   body { margin: 0; overflow: hidden; background: #686868; font-family: Arial, sans-serif; }
   #ui-card {
     position: absolute;
     top: 20px;
     left: 20px;
-    width: 160px;
+    width: 200px;
     padding: 15px;
     background: rgba(255,255,255,0.9);
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0,0,0,0.5);
     z-index: 10;
   }
-  #ui-card button {
+  #ui-card button, #ui-card input {
     width: 100%;
-    padding: 8px;
+    padding: 6px;
+    margin-bottom: 6px;
     font-size: 14px;
-    cursor: pointer;
+    box-sizing: border-box;
   }
 </style>
 </head>
@@ -29,29 +30,33 @@
 
 <div id="ui-card">
   <h3>Dice Spawner</h3>
-  <button id="spawnDiceBtn">Spawn Dice</button>
+  <button id="spawnD6Btn">Spawn D6</button>
+  <button id="spawnCustomBtn">Spawn Custom Dice</button>
+  <input type="text" id="face1" placeholder="Face 1">
+  <input type="text" id="face2" placeholder="Face 2">
+  <input type="text" id="face3" placeholder="Face 3">
+  <input type="text" id="face4" placeholder="Face 4">
+  <input type="text" id="face5" placeholder="Face 5">
+  <input type="text" id="face6" placeholder="Face 6">
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
 
 <script>
-// Scene
+// Scene setup
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x686868);
 
-// Camera
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
 camera.position.set(65, 65, 65);
 camera.lookAt(0, 0, 0);
 
-// Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
 
-// Lighting
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
 scene.add(ambientLight);
 
@@ -60,41 +65,66 @@ dirLight.position.set(100, 200, 100);
 dirLight.castShadow = true;
 scene.add(dirLight);
 
-// Main green block (playing field)
+// Green field
 const fieldGeometry = new THREE.BoxGeometry(100, 1, 100);
 const fieldMaterial = new THREE.MeshStandardMaterial({ color: 0x6aa84f });
 const field = new THREE.Mesh(fieldGeometry, fieldMaterial);
 field.position.y = 0.5;
 scene.add(field);
 
-// Array to store dice instances
 const diceArray = [];
 
-// Function to spawn a new dice
-function spawnDice() {
+// Helper: create canvas texture for a face
+function createFaceTexture(text) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0,0,256,256);
+  ctx.fillStyle = '#000000';
+  ctx.font = 'bold 150px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, 128, 128);
+  return new THREE.CanvasTexture(canvas);
+}
+
+// Spawn normal D6
+function spawnD6() {
   const diceSize = 10;
-  const diceGeometry = new THREE.BoxGeometry(diceSize, diceSize, diceSize);
-  const diceMaterials = [
-    new THREE.MeshStandardMaterial({ color: 0xff0000 }), // right
-    new THREE.MeshStandardMaterial({ color: 0x00ff00 }), // left
-    new THREE.MeshStandardMaterial({ color: 0x0000ff }), // top
-    new THREE.MeshStandardMaterial({ color: 0xffff00 }), // bottom
-    new THREE.MeshStandardMaterial({ color: 0xff00ff }), // front
-    new THREE.MeshStandardMaterial({ color: 0x00ffff })  // back
-  ];
-  const dice = new THREE.Mesh(diceGeometry, diceMaterials);
-
-  // Position dice on top of field, slightly offset to avoid overlap
-  const offset = diceArray.length * 12; // 12 units apart
-  dice.position.set(offset, field.position.y + 0.5 + diceSize / 2, 0);
+  const materials = [];
+  for (let i=1; i<=6; i++) materials.push(new THREE.MeshStandardMaterial({ map: createFaceTexture(i.toString()) }));
+  const geometry = new THREE.BoxGeometry(diceSize,diceSize,diceSize);
+  const dice = new THREE.Mesh(geometry, materials);
+  const offset = diceArray.length * 12;
+  dice.position.set(offset, field.position.y + 0.5 + diceSize/2, 0);
   dice.castShadow = true;
-
   scene.add(dice);
   diceArray.push(dice);
 }
 
-// Button listener
-document.getElementById('spawnDiceBtn').addEventListener('click', spawnDice);
+// Spawn custom dice
+function spawnCustomDice() {
+  const diceSize = 10;
+  const faces = [];
+  for (let i=1;i<=6;i++) {
+    const val = document.getElementById(`face${i}`).value || i.toString();
+    faces.push(val);
+  }
+  const materials = faces.map(f => new THREE.MeshStandardMaterial({ map: createFaceTexture(f) }));
+  const geometry = new THREE.BoxGeometry(diceSize,diceSize,diceSize);
+  const dice = new THREE.Mesh(geometry, materials);
+  const offset = diceArray.length * 12;
+  dice.position.set(offset, field.position.y + 0.5 + diceSize/2, 0);
+  dice.castShadow = true;
+  scene.add(dice);
+  diceArray.push(dice);
+}
+
+// Button listeners
+document.getElementById('spawnD6Btn').addEventListener('click', spawnD6);
+document.getElementById('spawnCustomBtn').addEventListener('click', spawnCustomDice);
 
 // Render loop
 function animate() {
