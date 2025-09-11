@@ -1,5 +1,5 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js';
-import { scene, camera, renderer, world } from './scene.js';
+import { scene, camera, renderer, world } from './scenes/main_scene.js';
 import { spawnD6, spawnCustomDice, diceArray, diceBodies } from './gameobjects/dice.js';
 
 // -------------------------
