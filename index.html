@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>3D Block without Shadow</title>
+<title>3D Block with Dice</title>
 <style>
   body { margin: 0; overflow: hidden; background: #686868; }
 </style>
@@ -25,7 +25,7 @@ camera.lookAt(0, 0, 0);
 // Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.shadowMap.enabled = true; // Enable shadows
+renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
 
@@ -46,13 +46,30 @@ dirLight.shadow.camera.near = 1;
 dirLight.shadow.camera.far = 500;
 scene.add(dirLight);
 
-// Main block (cube) – no shadow
-const geometry = new THREE.BoxGeometry(100, 1, 100);
-const material = new THREE.MeshStandardMaterial({ color: 0x6aa84f });
-const cube = new THREE.Mesh(geometry, material);
-cube.position.y = 0.5; // raise half the height above ground
-// cube.castShadow = true; // DO NOT cast shadow
-scene.add(cube);
+// Main green block (playing field) – no shadow
+const fieldGeometry = new THREE.BoxGeometry(100, 1, 100);
+const fieldMaterial = new THREE.MeshStandardMaterial({ color: 0x6aa84f });
+const field = new THREE.Mesh(fieldGeometry, fieldMaterial);
+field.position.y = 0.5; // top surface at y=1
+scene.add(field);
+
+// New block on top of the green field – acts as dice
+const diceSize = 10;
+const diceGeometry = new THREE.BoxGeometry(diceSize, diceSize, diceSize);
+const diceMaterials = [
+  new THREE.MeshStandardMaterial({ color: 0xff0000 }), // right
+  new THREE.MeshStandardMaterial({ color: 0x00ff00 }), // left
+  new THREE.MeshStandardMaterial({ color: 0x0000ff }), // top
+  new THREE.MeshStandardMaterial({ color: 0xffff00 }), // bottom
+  new THREE.MeshStandardMaterial({ color: 0xff00ff }), // front
+  new THREE.MeshStandardMaterial({ color: 0x00ffff })  // back
+];
+const dice = new THREE.Mesh(diceGeometry, diceMaterials);
+
+// Position dice directly on top of field, centered
+dice.position.set(0, field.position.y + 0.5 + diceSize / 2, 0);
+dice.castShadow = true;
+scene.add(dice);
 
 // Render loop
 function animate() {
