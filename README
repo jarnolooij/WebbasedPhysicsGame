@@ -2,5 +2,4 @@
 python server.py
 
 # Screenshot
-
-![screenshot]https://raw.githubusercontent.com/jarnolooij/WebbasedPhysicsGame/refs/heads/main/Screenshot_commons_protoype.png)
+<img src="https://raw.githubusercontent.com/jarnolooij/WebbasedPhysicsGame/refs/heads/main/Screenshot_commons_protoype.png" alt="">
